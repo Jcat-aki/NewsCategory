@@ -20,11 +20,11 @@ import java.util.List;
  * Created by anakano on 17/03/05.
  */
 
-public class DownloadTasks extends AsyncTask<URL, Integer, List<NewsItem>> {
+public class DownloadTasks extends AsyncTask<URL, Integer, List<String>> {
 
     private ProgressDialog mProgressDialog;
     private List<NewsItem> mNewsItems;
-    private OnCallback<List<NewsItem>> mCallBack;
+    private OnCallback<List<String>> mCallBack;
     private Exception mException;
 
     /**
@@ -32,7 +32,7 @@ public class DownloadTasks extends AsyncTask<URL, Integer, List<NewsItem>> {
      * @param progressDialog 進捗状況を表示するダイアログを表示
      * @param callback
      */
-    public DownloadTasks(ProgressDialog progressDialog, OnCallback<List<NewsItem>> callback){
+    public DownloadTasks(ProgressDialog progressDialog, OnCallback<List<String>> callback){
         super();
         mProgressDialog = progressDialog;
         mCallBack = callback;
@@ -59,7 +59,7 @@ public class DownloadTasks extends AsyncTask<URL, Integer, List<NewsItem>> {
      * @return ダウンロードした結果を返す
      */
     @Override
-    protected List<NewsItem> doInBackground(URL... urls) {
+    protected List<String> doInBackground(URL... urls) {
         String result = "";
         HttpURLConnection httpURLConnection = null;
         List<String> ids = new ArrayList<>();
@@ -91,56 +91,15 @@ public class DownloadTasks extends AsyncTask<URL, Integer, List<NewsItem>> {
             result = result.replaceAll("]","");
             result = result.replaceAll(" ","");
             ids = Arrays.asList(result.split(","));
-            int i = 0;
-
-            for( String id: ids){
-                final NewsItem newsItem = new NewsItem();
-                if ( i < 10 ){ // 最初に10件だけ取得する
-                    final URL url = new URL("https://hacker-news.firebaseio.com/v0/item/" + id + ".json?print=pretty");
-                    httpURLConnection = (HttpURLConnection) url.openConnection();
-                    httpURLConnection.setRequestMethod("GET");
-
-                    httpURLConnection.connect();
-
-                    if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        BufferedReader br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-                        readLine = "";
-                        sb = sb.delete(0, sb.length());
-                        String jsonResult = new String();
-                        while ((readLine = br.readLine()) != null) {
-                            sb.append(readLine);
-                        }
-                        jsonResult = sb.toString();
-
-                        JSONObject jsonObject = new JSONObject(jsonResult);
-                        newsItem.id = String.valueOf(jsonObject.getInt("id"));
-                        newsItem.by = jsonObject.getString("by");
-                        newsItem.type = jsonObject.getString("type");
-                        newsItem.title = jsonObject.getString("title");
-                        newsItem.score = jsonObject.getInt("score");
-                        // うまくできないため、後回し
-                        // newsItem.kids = (ArrayList<String>)jsonObject.get("kids");
-                    }
-                } else {
-                    newsItem.id = id;
-                }
-                i++;
-                double progress = i / ids.size() * 100;
-                publishProgress((int)Math.round(progress));
-                mNewsItems.add(newsItem);
-            }
 
         } catch (IOException e) {
-            e.printStackTrace();
-            mException = e;
-        } catch (JSONException e) {
             e.printStackTrace();
             mException = e;
         } finally {
             httpURLConnection.disconnect();
         }
         publishProgress(100);
-        return mNewsItems;
+        return ids;
     }
 
     /**
@@ -158,7 +117,7 @@ public class DownloadTasks extends AsyncTask<URL, Integer, List<NewsItem>> {
      * @param results 結果
      */
     @Override
-    protected void onPostExecute(List<NewsItem> results){
+    protected void onPostExecute(List<String> results){
         mProgressDialog.dismiss();
         if( mCallBack != null){
             if( mException == null) {

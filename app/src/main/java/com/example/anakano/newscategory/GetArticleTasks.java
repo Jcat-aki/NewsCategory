@@ -27,15 +27,19 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
     private ProgressDialog mProgressDialog;
     private TextView mTextView;
     private List<NewsItem> mNewsItems;
+    private OnCallback<List<NewsItem>> mCallBack;
 
     /**
      * コンストラクタ
      * @param progressDialog 進捗状況を表示するダイアログを表示
+     * @param items
+     * @param callback
      */
-    public GetArticleTasks(ProgressDialog progressDialog, List<NewsItem> items){
+    public GetArticleTasks(ProgressDialog progressDialog, List<NewsItem> items, OnCallback<List<NewsItem>> callback){
         super();
         mProgressDialog = progressDialog;
         mNewsItems = items;
+        mCallBack = callback;
     }
 
     /**
@@ -85,7 +89,9 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
                     newsItem.type = jsonObject.getString("type");
                     newsItem.title = jsonObject.getString("title");
                     newsItem.score = jsonObject.getInt("score");
-                    newsItem.kids = (ArrayList<String>)jsonObject.get("kids");
+                    //newsItem.kids = (ArrayList<String>)jsonObject.get("kids");
+
+                    results.add(newsItem);
                 }
                 publishProgress(10);
             }
@@ -116,7 +122,11 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
     @Override
     protected void onPostExecute( List<NewsItem> results){
 
-        mTextView.setText(results.get(0).title);
+       if( mCallBack != null ){
+           mCallBack.onSuccess(results);
+       }else{
+           mCallBack.onFailure(null);
+       }
 
         mProgressDialog.dismiss();
     }
