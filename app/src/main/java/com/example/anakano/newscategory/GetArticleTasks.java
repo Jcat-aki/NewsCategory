@@ -25,20 +25,16 @@ import java.util.List;
 public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<NewsItem>> {
 
     private ProgressDialog mProgressDialog;
-    private TextView mTextView;
-    private List<NewsItem> mNewsItems;
     private OnCallback<List<NewsItem>> mCallBack;
 
     /**
      * コンストラクタ
      * @param progressDialog 進捗状況を表示するダイアログを表示
-     * @param items
      * @param callback
      */
-    public GetArticleTasks(ProgressDialog progressDialog, List<NewsItem> items, OnCallback<List<NewsItem>> callback){
+    public GetArticleTasks(ProgressDialog progressDialog,  OnCallback<List<NewsItem>> callback){
         super();
         mProgressDialog = progressDialog;
-        mNewsItems = items;
         mCallBack = callback;
     }
 
@@ -93,7 +89,7 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
 
                     results.add(newsItem);
                 }
-                publishProgress(10);
+                publishProgress(5);
             }
         }catch(ProtocolException e){
             e.printStackTrace();
