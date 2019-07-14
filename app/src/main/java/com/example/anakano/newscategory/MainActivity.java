@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
     private List<String> mIds;
     private NewsItemAdapter mAdapter;
     private Toast mToast;
-    private GetArticleTasks mGetArticleTasks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
                         item.id = ids.get(mItems.size());
                         mItems.add(item);
                     }
-                    mGetArticleTasks = (GetArticleTasks) new GetArticleTasks(progressDialog, new OnCallback<List<NewsItem>>() {
+                    new GetArticleTasks(progressDialog, new OnCallback<List<NewsItem>>() {
                         @Override
                         public void onSuccess(List<NewsItem> object) {
                             for (int i = 0; i < LIMIT_SIZE; i++) {
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
                 items.add(item);
             }
             final ProgressDialog progressDialog = new ProgressDialog(this);
-            mGetArticleTasks = (GetArticleTasks) new GetArticleTasks(progressDialog, new OnCallback<List<NewsItem>>() {
+            new GetArticleTasks(progressDialog, new OnCallback<List<NewsItem>>() {
                 @Override
                 public void onSuccess(List<NewsItem> object) {
                     mItems.addAll(object);
