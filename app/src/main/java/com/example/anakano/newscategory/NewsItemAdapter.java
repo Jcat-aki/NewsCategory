@@ -54,7 +54,7 @@ public class NewsItemAdapter extends ArrayAdapter<NewsItem> {
             viewHolder = (ViewHolder) view.getTag();
         }
 
-        viewHolder.titleView.setText(mNewsItems.get(position).title);
+        viewHolder.titleView.setText(mNewsItems.get(position).japaneseTitle);
 
         return view;
     }

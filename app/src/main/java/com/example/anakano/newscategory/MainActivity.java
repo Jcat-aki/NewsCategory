@@ -29,21 +29,21 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
         setContentView(R.layout.activity_main);
 
         mItems = new ArrayList<>();
-        mAdapter = new NewsItemAdapter(this,R.layout.news_item);
+        mAdapter = new NewsItemAdapter(this, R.layout.news_item);
         final ListView listView = (ListView) findViewById(R.id.main_api_response_listview);
         listView.setAdapter(mAdapter);
         listView.setOnScrollListener(this);
 
-        mToast = new Toast(this);
+        mToast = new Toast(getApplicationContext());
 
         try {
             final URL url = new URL("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
             final ProgressDialog progressDialog = new ProgressDialog(this);
-            DownloadTasks downloadTasks = (DownloadTasks) new DownloadTasks(progressDialog, new OnCallback<List<String>>() {
+            new DownloadTasks(progressDialog, new OnCallback<List<String>>() {
                 @Override
                 public void onSuccess(final List<String> ids) {
                     mIds = ids;
-                    for( int i = 0; i < LIMIT_SIZE; i++ ){
+                    for (int i = 0; i < LIMIT_SIZE; i++) {
                         NewsItem item = new NewsItem();
                         item.id = ids.get(mItems.size());
                         mItems.add(item);
@@ -51,8 +51,9 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
                     mGetArticleTasks = (GetArticleTasks) new GetArticleTasks(progressDialog, new OnCallback<List<NewsItem>>() {
                         @Override
                         public void onSuccess(List<NewsItem> object) {
-                            for( int i = 0; i < LIMIT_SIZE; i++){
+                            for (int i = 0; i < LIMIT_SIZE; i++) {
                                 mItems.set(i, object.get(i));
+
                             }
                             mAdapter.setData(object);
                             mAdapter.notifyDataSetChanged();
@@ -67,8 +68,7 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
 
                 @Override
                 public void onFailure(Exception e) {
-                    mToast.setText(e.toString());
-                    mToast.show();
+                    e.printStackTrace();
                 }
             }).execute(url);
         } catch (MalformedURLException e) {
@@ -81,9 +81,9 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
 
     @Override
     public void onScrollStateChanged(AbsListView absListView, int i) {
-        if( absListView.getLastVisiblePosition() == (mAdapter.getCount() - 1) && absListView.getLastVisiblePosition() < mIds.size() - 1){ // 最後の列の読み込み
+        if (absListView.getLastVisiblePosition() == (mAdapter.getCount() - 1) && absListView.getLastVisiblePosition() < mIds.size() - 1) { // 最後の列の読み込み
             final List<NewsItem> items = new ArrayList<>();
-            for ( int x = 0 ; x < LIMIT_SIZE ; x++){
+            for (int x = 0; x < LIMIT_SIZE; x++) {
                 NewsItem item = new NewsItem();
                 item.id = mIds.get(mItems.size() + x);
                 items.add(item);

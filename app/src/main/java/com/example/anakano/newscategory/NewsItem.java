@@ -20,6 +20,8 @@ public class NewsItem {
     public String by;
     /** 記事のコメント */
     public List<String> kids;
+    /** 日本語タイトル */
+    public String japaneseTitle;
 
     public NewsItem(){
         // empty

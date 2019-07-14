@@ -29,10 +29,11 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
 
     /**
      * コンストラクタ
+     *
      * @param progressDialog 進捗状況を表示するダイアログを表示
      * @param callback
      */
-    public GetArticleTasks(ProgressDialog progressDialog,  OnCallback<List<NewsItem>> callback){
+    public GetArticleTasks(ProgressDialog progressDialog, OnCallback<List<NewsItem>> callback) {
         super();
         mProgressDialog = progressDialog;
         mCallBack = callback;
@@ -43,8 +44,6 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
      */
     @Override
     protected void onPreExecute() {
-        // とりあえず、よんでおくだけ
-        System.out.print("hogehoge");
 
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setIndeterminate(false);
@@ -55,15 +54,13 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
     @Override
     protected List<NewsItem> doInBackground(List<NewsItem>... newsItems) {
 
-        HttpURLConnection httpURLConnection = null;
         final List<NewsItem> results = new ArrayList<>();
-        int roop = 0;
 
         try {
             // 一旦この場所に記述し、必要に応じてメソッドに分割する
             for (NewsItem item : newsItems[0]) {
                 final URL url = new URL("https://hacker-news.firebaseio.com/v0/item/" + item.id + ".json?print=pretty");
-                httpURLConnection = (HttpURLConnection) url.openConnection();
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setRequestMethod("GET");
 
                 httpURLConnection.connect();
@@ -72,11 +69,10 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
                     BufferedReader br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
                     String readLine = "";
                     StringBuffer sb = new StringBuffer();
-                    String jsonResult = new String();
                     while ((readLine = br.readLine()) != null) {
                         sb.append(readLine);
                     }
-                    jsonResult = sb.toString();
+                    String jsonResult = sb.toString();
 
                     JSONObject jsonObject = new JSONObject(jsonResult);
                     final NewsItem newsItem = new NewsItem();
@@ -87,42 +83,63 @@ public class GetArticleTasks extends AsyncTask<List<NewsItem>, Integer, List<New
                     newsItem.score = jsonObject.getInt("score");
                     //newsItem.kids = (ArrayList<String>)jsonObject.get("kids");
 
+                    final URL transURL = new URL("https://script.google.com/macros/s/AKfycbwO1BOtnBqs1S6ZRfNIGnRhDWAGs5PK-Aj5pRkt3Uow5gG6-T5b/exec?text=" +
+                            newsItem.title + "&source=en&target=ja");
+                    HttpURLConnection transConnection = (HttpURLConnection) transURL.openConnection();
+                    transConnection.setRequestMethod("GET");
+
+                    transConnection.connect();
+                    if (transConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        br = new BufferedReader(new InputStreamReader(transConnection.getInputStream()));
+                        readLine = "";
+                        sb = new StringBuffer();
+                        while ((readLine = br.readLine()) != null) {
+                            sb.append(readLine);
+                        }
+                        jsonResult = sb.toString();
+
+                        jsonObject = new JSONObject(jsonResult);
+                        newsItem.japaneseTitle = String.valueOf(jsonObject.getString("translateed"));
+
+                    }
                     results.add(newsItem);
                 }
                 publishProgress(5);
             }
-        }catch(ProtocolException e){
+        } catch (ProtocolException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-       return results;
+        return results;
     }
 
     /**
      * doInBackground中に呼ばれて進捗状況を逐次報告してくれる最高なメソッド<br>
      * こいつは、UIメソッド上で動くよ
+     *
      * @param progress 進捗状況の数値
      */
     @Override
-    protected void onProgressUpdate( Integer... progress){
+    protected void onProgressUpdate(Integer... progress) {
         mProgressDialog.incrementProgressBy(progress[0]);
     }
 
     /**
      * doInBackgroundが完了したらよばれるやつ。UIスレッド上で動く。
+     *
      * @param results 結果
      */
     @Override
-    protected void onPostExecute( List<NewsItem> results){
+    protected void onPostExecute(List<NewsItem> results) {
 
-       if( mCallBack != null ){
-           mCallBack.onSuccess(results);
-       }else{
-           mCallBack.onFailure(null);
-       }
+        if (mCallBack != null) {
+            mCallBack.onSuccess(results);
+        } else {
+            mCallBack.onFailure(null);
+        }
 
         mProgressDialog.dismiss();
     }
